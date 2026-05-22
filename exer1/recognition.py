@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import json
+import serial
 from tensorflow.keras.models import load_model
 
 # Load the trained model
@@ -12,6 +13,12 @@ with open('class_indices.json', 'r') as f:
 
 # Initialize webcam
 cap = cv2.VideoCapture(0)
+arduino = serial.Serial('COM4', 9600)
+time.sleep(2)
+
+confidence_thresh = 0.75 
+required_frames = 10 # consecutive frames needed to send the command
+stable_confidence_count = 0 # current stable frames with >= confidence thresh
 
 while True:
     ret, frame = cap.read()
@@ -29,8 +36,23 @@ while True:
     
     class_idx = np.argmax(predictions)
     confidence = np.max(predictions)
-    label = f"{fruit_classes[class_idx]} ({confidence:.2f})"
-    
+
+    fruit_name = fruit_classes[class_idx]
+    label = f"{fruit_name} ({confidence:.2f})"
+
+    if confidence >= confidence_thresh:
+        stable_confidence_count +=1
+    else:
+        stable_confidence_count = 0
+
+    # send fruit command if confidence stays stable for at least 10 frames
+    if stable_confidence_count >= required_frames:
+        if fruit_name != last_sent:
+            arduino.write(command.encode())
+            print(f"Sent to Arduino: {command.strip()}")
+            last_sent = fruit_name
+        stable_count = 0
+        
     # Display result
     cv2.putText(frame, label, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
     cv2.imshow('Fruit Recognition', frame)
@@ -39,4 +61,5 @@ while True:
         break
 
 cap.release()
+arduino.close()
 cv2.destroyAllWindows()
