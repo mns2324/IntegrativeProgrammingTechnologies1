@@ -61,6 +61,10 @@ void loop() {
     command = Serial.read();
   }
 
+  moveMotor(motor1Pins, currentStep1, CLOCKWISE);
+
+  
+
   // ignore repeated commands
   if (command == currentBasket) {
     command = '\0';
