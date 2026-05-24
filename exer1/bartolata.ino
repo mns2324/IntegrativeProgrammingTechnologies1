@@ -17,7 +17,7 @@ char currentBasket = 'b'; // basket b as the default center
 // =============================
 // SERIAL COMMAND VARIABLE
 // =============================
-char command;
+char detectedFruit;
 
 // step sequence for handling motor rotation
 int stepSequence[4][4] = {
@@ -58,21 +58,17 @@ void loop() {
   // =============================
   if (Serial.available() > 0) {
 
-    command = Serial.read();
+    detectedFruit = Serial.read();
   }
-
-  moveMotor(motor1Pins, currentStep1, CLOCKWISE);
-
-  
-
+    
   // ignore repeated commands
-  if (command == currentBasket) {
-    command = '\0';
+  if (detectedFruit == currentBasket) {
+    detectedFruit = '\0';
   }
 
-  //// motor control for shifting basket position
-  // if command a: basket b -> ccw for 1 second, basket c -> ccw for 2 seconds
-  if (command == 'a') {
+  //// motor 2 control for shifting basket position
+  // if detectedFruit a: basket b -> ccw for 1 second, basket c -> ccw for 2 seconds
+  if (detectedFruit == 'a') {
 
     if (currentBasket == 'b'){
       for(int i = 0; i < 1000; i++){
@@ -85,14 +81,18 @@ void loop() {
       }     
     }
 
-    stopAllMotors();
-
+    stopMotor(motor2Pins);
+    // motor 1 control moves a bit to drop fruit into basket below if confident enough
+    for(int i = 0; i < 500; i++){
+      moveMotor(motor1Pins, currentStep1, CLOCKWISE);
+    }
+    
     currentBasket = 'a';
-    command = '\0'; // set command to null again
+    detectedFruit = '\0'; // set command to null again
   }
 
   // if command b: basket a -> cw for 1 second, basket c -> ccw for 1 second
-  else if (command == 'b') {
+  else if (detectedFruit == 'b') {
     
     if (currentBasket == 'a'){
       for(int i = 0; i < 1000; i++){
@@ -104,15 +104,19 @@ void loop() {
         moveMotor(motor2Pins, currentStep2, COUNTERCLOCKWISE);
       }
     }
-    
-    stopAllMotors();
+
+    stopMotor(motor2Pins);
+    // motor 1 control moves a bit to drop fruit into basket below if confident enough
+    for(int i = 0; i < 500; i++){
+      moveMotor(motor1Pins, currentStep1, CLOCKWISE);
+    }
 
     currentBasket = 'b';
-    command = '\0'; // set command to null again
+    detectedFruit = '\0'; // set command to null again
   }
 
   // if command c: basket a -> cw for 2 seconds, basket b -> cw for 1 second
-  else if (command == 'c') {
+  else if (detectedFruit == 'c') {
     
     if (currentBasket == 'a'){
       for(int i = 0; i < 2000; i++){
@@ -124,11 +128,19 @@ void loop() {
         moveMotor(motor2Pins, currentStep2, CLOCKWISE);
       }
     }
-    
-    stopAllMotors();
+
+    stopMotor(motor2Pins);
+    // motor 1 control moves a bit to drop fruit into basket below if confident enough
+    for(int i = 0; i < 500; i++){
+      moveMotor(motor1Pins, currentStep1, CLOCKWISE);
+    }
 
     currentBasket = 'c';
-    command = '\0'; // set command to null again
+    detectedFruit = '\0'; // set command to null again
+  }
+  else {
+    // move continuously until a new fruit is spotted
+    moveMotor(motor1Pins, currentStep1, CLOCKWISE);
   }
 }
 
@@ -159,13 +171,15 @@ void moveMotor(int motorPins[], int &currentStep, int direction) {
   delayMicroseconds(2000);
 }
 
-// =============================
-// STOP BOTH MOTORS
-// =============================
+void stopMotor(int motorPins[]) {
+  for(int i = 0; i < 4; i++){
+    digitalWrite(motorPins[i], LOW);
+  }
+}
+
+
 void stopAllMotors() {
-
   for (int i = 0; i < 4; i++) {
-
     digitalWrite(motor1Pins[i], LOW);
     digitalWrite(motor2Pins[i], LOW);
   }
