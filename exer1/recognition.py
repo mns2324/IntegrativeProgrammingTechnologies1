@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import json
+import time
 import serial
 from tensorflow.keras.models import load_model
 
@@ -19,6 +20,13 @@ time.sleep(2)
 confidence_thresh = 0.75 
 required_frames = 10 # consecutive frames needed to send the command
 stable_confidence_count = 0 # current stable frames with >= confidence thresh
+last_sent = ""
+
+fruit_to_command = {
+    "apple": "a",
+    "calamansi": "b",
+    "lemon": "c"
+}
 
 while True:
     ret, frame = cap.read()
@@ -47,11 +55,13 @@ while True:
 
     # send fruit command if confidence stays stable for at least 10 frames
     if stable_confidence_count >= required_frames:
+        if fruit_name in fruit_to_command:
+            command = fruit_to_command[fruit_name]
         if fruit_name != last_sent:
             arduino.write(command.encode())
             print(f"Sent to Arduino: {command.strip()}")
             last_sent = fruit_name
-        stable_count = 0
+        stable_confidence_count = 0
         
     # Display result
     cv2.putText(frame, label, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
