@@ -18,9 +18,11 @@ arduino = serial.Serial('COM4', 9600)
 time.sleep(2)
 
 confidence_thresh = 0.75 
-required_frames = 10 # consecutive frames needed to send the command
-stable_confidence_count = 0 # current stable frames with >= confidence thresh
-last_sent = ""
+required_frames = 10           # consecutive frames needed to send the command
+stable_confidence_count = 0    # current stable frames with >= confidence thresh
+last_sent_fruit = ""
+last_sent_time = 0.0           # timestamp of last command sent
+cooldown_seconds = 3.0         # seconds to wait before the same fruit can re-trigger
 
 fruit_to_command = {
     "apple": "a",
@@ -55,16 +57,30 @@ while True:
 
     # send fruit command if confidence stays stable for at least 10 frames
     if stable_confidence_count >= required_frames:
-        if fruit_name in fruit_to_command:
+        stable_confidence_count = 0  # reset counter regardless of outcome
+
+        # get current time and check how much time has passed since then
+        now = time.time()
+        time_since_last = now - last_sent_time
+        # prevent spamming arduino with the same command if its still on the same fruit
+        same_fruit_on_cooldown = (fruit_name == last_sent_fruit) and (time_since_last < cooldown_seconds)
+ 
+        if fruit_name in fruit_to_command and not same_fruit_on_cooldown:
             command = fruit_to_command[fruit_name]
-        if fruit_name != last_sent:
             arduino.write(command.encode())
-            print(f"Sent to Arduino: {command.strip()}")
-            last_sent = fruit_name
-        stable_confidence_count = 0
-        
-    # Display result
-    cv2.putText(frame, label, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            print(f"Sent to Arduino: '{command}' ({fruit_name}, confidence: {confidence:.2f})")
+            last_sent_fruit = fruit_name
+            last_sent_time = now
+
+    # update display based on confidence
+    if confidence >= confidence_thresh:
+        display_label = f"{fruit_name} ({confidence:.2f})"
+        color = (0, 255, 0)
+    else:
+        display_label = f"No fruit detected ({confidence:.2f})"
+        color = (255, 0, 0)
+
+    cv2.putText(frame, display_label, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
     cv2.imshow('Fruit Recognition', frame)
     
     if cv2.waitKey(1) == ord('q'):
