@@ -79,17 +79,11 @@ void loop() {
     if (currentBasket == 'b'){
       for(int i = 0; i < 1000; i++){
         moveMotor(motor2Pins, currentStep2, COUNTERCLOCKWISE);
-        conveyor2_status = "RUNNING";
-        current_box_position = String(currentBasket); 
-        sendMachineStatus();
       }
     }
     else if (currentBasket == 'c'){
       for(int i = 0; i < 2000; i++){
         moveMotor(motor2Pins, currentStep2, COUNTERCLOCKWISE);
-        conveyor2_status = "RUNNING";
-        current_box_position = String(currentBasket); 
-        sendMachineStatus();
       }     
     }
 
@@ -100,11 +94,11 @@ void loop() {
     // motor 1 control moves a bit to drop fruit into basket below if confident enough
     for(int i = 0; i < 500; i++){
       moveMotor(motor1Pins, currentStep1, CLOCKWISE);
-      conveyor1_status = "RUNNING";
-      sendMachineStatus();
     }
     
     currentBasket = 'a';
+    current_box_position = String(currentBasket);  
+    sendMachineStatus();
     detectedFruit = '\0'; // set command to null again
   }
 
@@ -129,6 +123,8 @@ void loop() {
     }
 
     currentBasket = 'b';
+    current_box_position = String(currentBasket);  
+    sendMachineStatus();
     detectedFruit = '\0'; // set command to null again
   }
 
@@ -153,6 +149,8 @@ void loop() {
     }
 
     currentBasket = 'c';
+    current_box_position = String(currentBasket);  
+    sendMachineStatus();
     detectedFruit = '\0'; // set command to null again
   }
   else {
@@ -165,13 +163,13 @@ void loop() {
 // communicate status to python
 void sendMachineStatus() {
   Serial.print("conveyor1_status=");
-  Serial.print(conveyor1_status);
+  Serial.println(conveyor1_status);
   
   Serial.print("conveyor2_status=");
-  Serial.print(conveyor2_status);
+  Serial.println(conveyor2_status);
   
   Serial.print("current_box_position=");
-  Serial.print(current_box_position);
+  Serial.println(current_box_position);
   
   Serial.print("arduino_status=");
   Serial.println(arduino_status);
