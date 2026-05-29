@@ -3,7 +3,18 @@ import numpy as np
 import json
 import time
 import serial
+import mysql.connector
 from tensorflow.keras.models import load_model
+
+# save machine status that was read from arduino into the database
+def save_machine_status(status):
+    sql = ""
+
+    cursor.execute(sql, values)
+    db.commit()
+
+    print("Saved to MySQL:", status)
+
 
 # Load the trained model
 model = load_model('fruit_recognition_model.h5')
@@ -82,9 +93,15 @@ while True:
 
     cv2.putText(frame, display_label, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
     cv2.imshow('Fruit Recognition', frame)
+
+    line = arduino.readline().decode("utf-8").strip()
+    if line.startswith("conveyor1_status"):		
+        status = parse_status(line)		
+        save_machine_status(status)
     
     if cv2.waitKey(1) == ord('q'):
         break
+        
 
 cap.release()
 arduino.close()
