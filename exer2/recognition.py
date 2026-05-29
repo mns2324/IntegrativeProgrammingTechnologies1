@@ -6,13 +6,40 @@ import serial
 import mysql.connector
 from tensorflow.keras.models import load_model
 
+db = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password="root",
+    database="fruitinventory"
+)
+cursor = db.cursor()
+
+machine_status = {}
+def parse_status(line):
+    # line format: "key=value"
+    if '=' in line:
+        key, _, value = line.partition('=')
+        machine_status[key.strip()] = value.strip()
+    # Once all 4 keys are collected, save and clear
+    if len(machine_status) == 4:
+        save_machine_status(dict(machine_status))
+        machine_status.clear()
+
 # save machine status that was read from arduino into the database
 def save_machine_status(status):
-    sql = ""
-
+    sql = """
+        INSERT INTO machine_status
+            (conveyor1_status, conveyor2_status, current_box_position, arduino_status, last_updated)
+        VALUES (%s, %s, %s, %s, %s)
+    """
+    values = (
+        status.get("conveyor1_status", "stopped"),
+        status.get("conveyor2_status", "stopped"),
+        status.get("current_box_position", "b"),
+        status.get("arduino_status", "online")
+    )
     cursor.execute(sql, values)
     db.commit()
-
     print("Saved to MySQL:", status)
 
 
@@ -94,10 +121,11 @@ while True:
     cv2.putText(frame, display_label, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
     cv2.imshow('Fruit Recognition', frame)
 
-    line = arduino.readline().decode("utf-8").strip()
-    if line.startswith("conveyor1_status"):		
-        status = parse_status(line)		
-        save_machine_status(status)
+    if arduino.in_waiting > 0:
+        line = arduino.readline().decode("utf-8").strip()
+        if line.startswith("conveyor1_status"):		
+            status = parse_status(line)		
+            save_machine_status(status)
     
     if cv2.waitKey(1) == ord('q'):
         break
