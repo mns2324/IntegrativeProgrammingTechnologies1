@@ -28,6 +28,12 @@ int stepSequence[4][4] = {
   {HIGH, LOW, LOW, HIGH}
 };
 
+// machine status
+String conveyor1_status = "stopped";
+String conveyor2_status = "stopped";
+String current_box_position = "b";
+String arduino_status = "online";
+
 void setup() {
 
   Serial.begin(9600);
@@ -67,31 +73,42 @@ void loop() {
   }
 
   //// motor 2 control for shifting basket position
-  // if detectedFruit a: basket b -> ccw for 1 second, basket c -> ccw for 2 seconds
+  // if detectedFruit a: move to basket b -> ccw for 1 second, move to basket c -> ccw for 2 seconds
   if (detectedFruit == 'a') {
 
     if (currentBasket == 'b'){
       for(int i = 0; i < 1000; i++){
         moveMotor(motor2Pins, currentStep2, COUNTERCLOCKWISE);
+        conveyor2_status = "RUNNING";
+        current_box_position = String(currentBasket); 
+        sendMachineStatus();
       }
     }
     else if (currentBasket == 'c'){
       for(int i = 0; i < 2000; i++){
         moveMotor(motor2Pins, currentStep2, COUNTERCLOCKWISE);
+        conveyor2_status = "RUNNING";
+        current_box_position = String(currentBasket); 
+        sendMachineStatus();
       }     
     }
 
     stopMotor(motor2Pins);
+    conveyor2_status = "STOPPED";
+    sendMachineStatus();
+    
     // motor 1 control moves a bit to drop fruit into basket below if confident enough
     for(int i = 0; i < 500; i++){
       moveMotor(motor1Pins, currentStep1, CLOCKWISE);
+      conveyor1_status = "RUNNING";
+      sendMachineStatus();
     }
     
     currentBasket = 'a';
     detectedFruit = '\0'; // set command to null again
   }
 
-  // if command b: basket a -> cw for 1 second, basket c -> ccw for 1 second
+  // if command b: move to basket a -> cw for 1 second, move to basket c -> ccw for 1 second
   else if (detectedFruit == 'b') {
     
     if (currentBasket == 'a'){
@@ -115,7 +132,7 @@ void loop() {
     detectedFruit = '\0'; // set command to null again
   }
 
-  // if command c: basket a -> cw for 2 seconds, basket b -> cw for 1 second
+  // if command c: move to basket a -> cw for 2 seconds, move to basket b -> cw for 1 second
   else if (detectedFruit == 'c') {
     
     if (currentBasket == 'a'){
@@ -141,6 +158,7 @@ void loop() {
   else {
     // move continuously until a new fruit is spotted
     moveMotor(motor1Pins, currentStep1, CLOCKWISE);
+    conveyor1_status = "running";
   }
 }
 
