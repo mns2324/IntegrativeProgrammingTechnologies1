@@ -144,6 +144,22 @@ void loop() {
   }
 }
 
+// communicate status to python
+void sendMachineStatus() {
+  Serial.print("conveyor1_status=");
+  Serial.print(conveyor1_status);
+  
+  Serial.print("conveyor2_status=");
+  Serial.print(conveyor2_status);
+  
+  Serial.print("current_box_position=");
+  Serial.print(current_box_position);
+  
+  Serial.print("arduino_status=");
+  Serial.println(arduino_status);
+}
+
+
 // =============================
 // GENERIC MOTOR FUNCTION
 // =============================
