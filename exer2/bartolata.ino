@@ -77,20 +77,24 @@ void loop() {
   if (detectedFruit == 'a') {
 
     if (currentBasket == 'b'){
+      conveyor2_status = "running";
+      sendMachineStatus();
       for(int i = 0; i < 1000; i++){
         moveMotor(motor2Pins, currentStep2, COUNTERCLOCKWISE);
       }
     }
     else if (currentBasket == 'c'){
+      conveyor2_status = "running";
+      sendMachineStatus();
       for(int i = 0; i < 2000; i++){
         moveMotor(motor2Pins, currentStep2, COUNTERCLOCKWISE);
       }     
     }
 
     stopMotor(motor2Pins);
-    conveyor2_status = "STOPPED";
+    conveyor2_status = "stopped";
     sendMachineStatus();
-    
+
     // motor 1 control moves a bit to drop fruit into basket below if confident enough
     for(int i = 0; i < 500; i++){
       moveMotor(motor1Pins, currentStep1, CLOCKWISE);
@@ -106,17 +110,23 @@ void loop() {
   else if (detectedFruit == 'b') {
     
     if (currentBasket == 'a'){
+      conveyor2_status = "running";
+      sendMachineStatus();
       for(int i = 0; i < 1000; i++){
         moveMotor(motor2Pins, currentStep2, CLOCKWISE);
       }
     }
     else if (currentBasket == 'c'){
+      conveyor2_status = "running";
+      sendMachineStatus();
       for(int i = 0; i < 1000; i++){
         moveMotor(motor2Pins, currentStep2, COUNTERCLOCKWISE);
       }
     }
 
     stopMotor(motor2Pins);
+    conveyor2_status = "stopped";
+    sendMachineStatus();
     // motor 1 control moves a bit to drop fruit into basket below if confident enough
     for(int i = 0; i < 500; i++){
       moveMotor(motor1Pins, currentStep1, CLOCKWISE);
@@ -132,11 +142,15 @@ void loop() {
   else if (detectedFruit == 'c') {
     
     if (currentBasket == 'a'){
+      conveyor2_status = "running";
+      sendMachineStatus();
       for(int i = 0; i < 2000; i++){
         moveMotor(motor2Pins, currentStep2, CLOCKWISE);
       }
     }
     else if (currentBasket == 'b'){
+      conveyor2_status = "running";
+      sendMachineStatus();
       for(int i = 0; i < 1000; i++){
         moveMotor(motor2Pins, currentStep2, CLOCKWISE);
       }
@@ -157,6 +171,7 @@ void loop() {
     // move continuously until a new fruit is spotted
     moveMotor(motor1Pins, currentStep1, CLOCKWISE);
     conveyor1_status = "running";
+    sendMachineStatus();
   }
 }
 
