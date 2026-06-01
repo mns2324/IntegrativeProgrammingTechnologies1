@@ -15,15 +15,49 @@ db = mysql.connector.connect(
 cursor = db.cursor()
 
 machine_status = {}
+last_logged_fruit = ""
+last_logged_confidence = 0.0
+last_conveyor_state = None 
+
 def parse_status(line):    
-    # line format: "key=value"
+    # line format: "conveyor1=running"
     if '=' in line:
         key, value = line.split('=')
         machine_status[key.strip()] = value.strip()
     # once all 4 keys are collected, save and clear
     if len(machine_status) == 4:
         save_machine_status(dict(machine_status))
+        conv1 = machine_status.get("conveyor1_status")
+        conv2 = machine_status.get("conveyor2_status")
+        current_state = (conv1, conv2)
+
+        if last_logged_fruit and current_state != last_conveyor_state:
+            # step 2: conveyor2 just started running; moving to box
+            if conv1 == "stopped" and conv2 == "running":
+                log_sort_event(last_logged_fruit, last_logged_confidence, f"move_to_{last_logged_fruit}_box")
+
+            # step 3: conveyor1 running again, conveyor2 stopped; dropping fruit
+            elif conv1 == "running" and conv2 == "stopped" and last_conveyor_state == ("stopped", "stopped"):
+                log_sort_event(last_logged_fruit, last_logged_confidence, "drop_fruit")
+
+        last_conveyor_state = current_state
         machine_status.clear()
+
+# save sorting logs
+def log_sort_event(fruit_name, confidence, action):
+    fruit_ids = {"apple": 1, "calamansi": 2, "lemon": 3}
+    if fruit_name not in fruit_ids:
+        return
+
+    sql = """
+        INSERT INTO sorting_logs
+            (fruit_id, detected_label, confidence_score, detection_datetime, conveyor_action)
+        VALUES (%s, %s, %s, NOW(), %s)
+    """
+    values = (fruit_ids[fruit_name], fruit_name, confidence, action)
+    cursor.execute(sql, values)
+    db.commit()
+    print(f"Logged: {fruit_name} -> {action} ({confidence:.2f})")
 
 # save machine status that was read from arduino into sql
 def save_machine_status(status):
@@ -107,33 +141,18 @@ try:
      
             if fruit_name in fruit_to_command and not same_fruit_on_cooldown:
                 command = fruit_to_command[fruit_name]
+                message = f"{command}:{confidence:.2f}\n"
                 arduino.write(command.encode())
                 print(f"Sent to Arduino: '{command}' ({fruit_name}, confidence: {confidence:.2f})")
                 last_sent_fruit = fruit_name
                 last_sent_time = now
 
-                # sorting_log step 1: fruit_detected 
-                sql = """
-                    INSERT INTO sorting_logs
-                        (fruit_id,detected_label,confidence_score,detection_datetime,conveyor_action)
-                    VALUES (%s,%s,%s,NOW(),%s)
-                """
-                
-                fruit_ids = {
-                    "apple": 1,
-                    "calamansi": 2,
-                    "lemon": 3
-                }
-                
-                values = (
-                    fruit_ids[fruit_name],
-                    fruit_name,
-                    float(confidence),
-                    f"move_to_{fruit_name}_box"
-                )
-                
-                cursor.execute(sql, values)
-                db.commit()
+                # store for use in arduino-triggered steps 2 and 3
+                last_logged_fruit = fruit_name
+                last_logged_confidence = float(confidence)
+            
+                # step 1: fruit detected by AI
+                log_sort_event(fruit_name, float(confidence), f"{fruit_name}_detected")
     
         # update display based on confidence
         if confidence >= confidence_thresh:
