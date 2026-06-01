@@ -1,0 +1,1 @@
+ikvmc -target:library <path of java.jar> <path of mysqlconnector.jar>
