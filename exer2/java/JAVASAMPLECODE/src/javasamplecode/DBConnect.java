@@ -14,30 +14,30 @@ public class DBConnect {
     static Statement st;
     static ResultSet rs;  
     
-public void Connect() {
+    public void Connect() {
 
-    try {
+        try {
 
-        Class.forName("com.mysql.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
 
-        con = DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/sample",
-                "root",
-                "root"
-                        
-        );
+            con = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/sample",
+                    "root",
+                    "root"
 
-        st = con.createStatement();
+            );
 
-        System.out.println("Connected");
+            st = con.createStatement();
 
-    } catch (Exception ex) {
+            System.out.println("Connected");
 
-        System.out.println("Failed to Connect: " + ex);
+        } catch (Exception ex) {
 
-    }
+            System.out.println("Failed to Connect: " + ex);
+
+        }
 
 
-}    
+    }    
 }
 
