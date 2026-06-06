@@ -102,6 +102,7 @@ void loop() {
     
     currentBasket = 'a';
     current_box_position = String(currentBasket);  
+    conveyor1_status = "stopped";
     sendMachineStatus();
     detectedFruit = '\0'; // set command to null again
   }
@@ -134,6 +135,7 @@ void loop() {
 
     currentBasket = 'b';
     current_box_position = String(currentBasket);  
+    conveyor1_status = "stopped";
     sendMachineStatus();
     detectedFruit = '\0'; // set command to null again
   }
@@ -164,6 +166,7 @@ void loop() {
 
     currentBasket = 'c';
     current_box_position = String(currentBasket);  
+    conveyor1_status = "stopped";
     sendMachineStatus();
     detectedFruit = '\0'; // set command to null again
   }
