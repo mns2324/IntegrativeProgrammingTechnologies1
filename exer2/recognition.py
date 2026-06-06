@@ -15,14 +15,17 @@ db = mysql.connector.connect(
 cursor = db.cursor()
 
 machine_status = {}
+last_conveyor_state = None
 last_logged_fruit = ""
 last_logged_confidence = 0.0
-last_conveyor_state = None
 
 # =============================
 # PARSE ARDUINO STATUS LINE
 # =============================
 def parse_status(line):
+    # declare as global here to correctly update these variables outside the function
+    global last_conveyor_state, last_logged_fruit, last_logged_confidence
+    
     # ["conveyor1_status=running", "conveyor2_status=stopped", ...]
     parts = line.split(",")
     for part in parts:
