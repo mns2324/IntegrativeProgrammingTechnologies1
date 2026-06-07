@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="WebApplication8.WebForm1" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="WebApplication8.WebForm1" %>
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -295,11 +295,44 @@
             .page-wrapper { margin: 20px auto; padding: 0 12px; }
         }
 
+        /* ===== STAT CARDS (fourcontainersdiv) ===== */
         .fourcontainersdiv {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr 1fr;
             gap: 20px;
             margin-bottom: 30px;
+        }
+
+        .fourcontainersdiv .card {
+            display: flex; /* make icon display next to text */
+            flex-direction: row;
+            align-items: center;
+            gap: 16px;
+            padding: 12px;
+        }
+
+        .fourcontainersdiv .card-body {
+            padding: 0; /* no padding for table */
+        }
+
+        .card-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            flex-shrink: 0; /* prevents image from squishing */
+        }
+
+        .card-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a237e;
+        }
+
+        .card-label {
+            font-size: 14px;
+            margin-bottom: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
 
         .inventoryandlogsdiv {
@@ -309,11 +342,34 @@
             margin-bottom: 30px;
         }
 
+        .inventoryandlogsdiv .card-body {
+            padding: 0; /* no padding for table */
+        }
+
+        .logs-scroll {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        /* keep the header fixed while scrolling */
+        .logs-scroll .data-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
         .monitoringandordersdiv {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
             margin-bottom: 30px;
+        }
+
+        .fruit-img {
+            width:50px;
+            height:50px;
+            object-fit:cover;
+            border-radius:6px;
         }
     </style>
 </head>
@@ -336,20 +392,36 @@
 
         <div class="fourcontainersdiv">
             <div class="card">
-                test
-                <div class="card-body">Total Fruits</div>
+                <img src="https://placehold.co/100x100" alt="icon" class="card-icon" />
+                <div class="card-body">
+                    <div class="card-label">Total Fruits</div>
+                    <div class="card-value" style="color:green">number</div>
+                    
+                </div>
             </div>
             <div class="card">
-                test
-                <div class="card-body">Total Orders</div>
+                <img src="https://placehold.co/100x100" alt="icon" class="card-icon" />
+                <div class="card-body">
+                    <div class="card-label">Total Orders</div>
+                    <div class="card-value" style="color:deepskyblue">number</div>
+                    
+                </div>
             </div>
             <div class="card">
-                test
-                <div class="card-body">Pending Orders</div>
+                <img src="https://placehold.co/100x100" alt="icon" class="card-icon" />
+                <div class="card-body">
+                    <div class="card-label">Pending Orders</div>
+                    <div class="card-value" style="color:darkorange">number</div>
+                    
+                </div>
             </div>
             <div class="card">
-                test
-                <div class="card-body">Machine Status</div>
+                <img src="https://placehold.co/100x100" alt="icon" class="card-icon" />
+                <div class="card-body">
+                    <div class="card-label">Machine Status</div>
+                    <div class="card-value" style="color:purple">Running</div>
+                    
+                </div>
             </div>
         </div>
 
@@ -357,11 +429,10 @@
         <div class="inventoryandlogsdiv">
             <div class="card">
                 <div class="card-header">
-                    <span class="icon">&#10010;</span>
                     Fruit Inventory
                 </div>
                 <div class="card-body">
-                    <div class="form-grid">
+<%--                    <div class="form-grid">
 
                         <div class="form-group">
                             <label>Student ID <span class="required">*</span></label>
@@ -401,22 +472,29 @@
                     </div>
 
                     <!-- Status message rendered from code-behind -->
-                    <asp:Literal ID="litStatus" runat="server" />
+                    <asp:Literal ID="litStatus" runat="server" />--%>
+
+                    <!-- this table is populated in code-behind with a styled HTML table -->
+                    <asp:Literal ID="litFruitsTable" runat="server" />
                 </div>
             </div>
             <div class="card">
                 <div class="card-header">Recent Sorting Logs</div>
-                <div class="card-body"></div>
+                <div class="card-body">
+                    <!-- this table is populated in code-behind with a styled HTML table -->
+                    <div class="logs-scroll">
+                        <asp:Literal ID="litLogsTable" runat="server" />
+                    </div>
+                </div>
             </div>
         </div>
 
         <div class="monitoringandordersdiv">
             <div class="card">
                 <div class="card-header">Machine Monitoring</div>
-                <div class="card-body"></div>
+                <div class="card-body">Placeholder</div>
             </div>
 
-            <!-- ===== STUDENT LIST CARD ===== -->
             <div class="card">
                 <div class="card-header">
                     Pending Orders
@@ -424,18 +502,15 @@
                         Data via Java DLL (IKVM)
                     </span>
                 </div>
-                <div class="card-body" style="padding:0;">
-                    <!-- litTable is populated in code-behind with a styled HTML table -->
-                    <asp:Literal ID="litTable" runat="server" />
+                <div class="card-body">
+                    Placeholder
                 </div>
-            </div>
-
-            <div class="footer">
-                Smart Fruit Sorting System (Admin Webpage) &bull; ASP.NET + Java (IKVM) + MySQL
             </div>
         </div>
 
-
+        <div class="footer">
+            Smart Fruit Sorting System (Admin Webpage) &bull; ASP.NET + Java (IKVM) + MySQL
+        </div>
     </div>
     </form>
 
