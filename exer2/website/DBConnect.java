@@ -27,7 +27,7 @@ public class DBConnect {
 
             // establish connection 
             con = DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/sample",
+                "jdbc:mysql://localhost:3306/fruitinventory",
                 "root",
                 "root"
             );
