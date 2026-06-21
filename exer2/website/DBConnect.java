@@ -18,7 +18,6 @@ public class DBConnect {
 
     /**
      * Opens a connection to the MySQL database.
-     * Update host, port, database name, username, and password as needed.
      */
     public void Connect() {
         try {
@@ -38,6 +37,22 @@ public class DBConnect {
 
         } catch (Exception ex) {
             System.out.println("Failed to Connect: " + ex);
+        }
+    }
+    public void ConnectSample() {
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+
+            con = DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/sample",
+                "root",
+                "root"
+            );
+
+            System.out.println("Connected to sample db with users table");
+
+        } catch (Exception ex) {
+            System.out.println("Connection Error (sample): " + ex);
         }
     }
 }
